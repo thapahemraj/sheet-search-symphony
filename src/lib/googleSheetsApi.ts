@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SheetData {
@@ -36,17 +37,12 @@ export const getAvailableSheets = async (sheetId?: string): Promise<{id: string,
     return data.sheets || [];
   } catch (err) {
     console.error("Failed to fetch sheets:", err);
-    // Fallback to mock data for development if API fails
-    return [
-      { id: "0", name: "Sheet1" },
-      { id: "1234567890", name: "Sheet2" },
-      { id: "987654321", name: "Sheet3" }
-    ];
+    throw new Error(`Failed to fetch sheets: ${err.message || "Unknown error"}`);
   }
 };
 
 // Get data from a specific sheet
-export const getSheetData = async (sheetId: string): Promise<SheetData | null> => {
+export const getSheetData = async (sheetId: string): Promise<SheetData> => {
   try {
     console.log(`Fetching data for sheet ID: ${sheetId}`);
     // First, get the available sheets to find the sheet name
@@ -72,15 +68,18 @@ export const getSheetData = async (sheetId: string): Promise<SheetData | null> =
     }
 
     console.log("Sheet data fetched successfully");
+    if (!data || !data.headers || !data.rows) {
+      throw new Error("Invalid data format returned from API");
+    }
+
     return {
       headers: data.headers || [],
       rows: data.rows || [],
-      sheetName: data.sheetName,
+      sheetName: data.sheetName || sheet.name,
     };
   } catch (err) {
     console.error("Failed to fetch sheet data:", err);
-    // Return null on error, let the component handle this
-    return null;
+    throw new Error(`Failed to fetch sheet data: ${err.message || "Unknown error"}`);
   }
 };
 

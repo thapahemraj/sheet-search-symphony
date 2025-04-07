@@ -1,7 +1,7 @@
 
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FileSpreadsheet, AlertCircle, Search } from "lucide-react";
 
 interface ResultsDisplayProps {
   result: Record<string, string> | null;
@@ -20,13 +20,13 @@ const ResultsDisplay = ({
 }: ResultsDisplayProps) => {
   if (loading) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>
+      <Card className="w-full border-blue-300 shadow-md overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
+          <CardTitle className="flex items-center">
             <Skeleton className="h-8 w-64" />
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {Array(5).fill(0).map((_, i) => (
             <div key={i} className="mb-4">
               <Skeleton className="h-6 w-full" />
@@ -39,12 +39,14 @@ const ResultsDisplay = ({
 
   if (error) {
     return (
-      <Card className="w-full bg-destructive/10">
-        <CardHeader>
-          <CardTitle className="text-destructive">Error</CardTitle>
+      <Card className="w-full bg-red-50 border-red-300 shadow-md overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-red-100 to-red-50">
+          <CardTitle className="text-red-700 flex items-center">
+            <AlertCircle className="h-5 w-5 mr-2" /> Error
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p>{error}</p>
+          <p className="text-red-600">{error}</p>
         </CardContent>
       </Card>
     );
@@ -52,14 +54,19 @@ const ResultsDisplay = ({
 
   if (!searchPerformed) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Search Results</CardTitle>
+      <Card className="w-full border-blue-200 shadow-md bg-gradient-to-b from-white to-blue-50">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
+          <CardTitle className="text-blue-700 flex items-center">
+            <Search className="h-5 w-5 mr-2" /> Search Results
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Select a sheet and search by ID to view results.
-          </p>
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <FileSpreadsheet className="h-16 w-16 text-blue-300 mb-4" />
+            <p className="text-blue-600">
+              Select a sheet and search by ID to view results.
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -67,30 +74,38 @@ const ResultsDisplay = ({
 
   if (!result) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>No Results Found</CardTitle>
+      <Card className="w-full border-amber-200 shadow-md overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100">
+          <CardTitle className="text-amber-700">No Results Found</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            No matching record was found. Please try a different search term.
-          </p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Search className="h-12 w-12 text-amber-300 mb-4" />
+            <p className="text-amber-600">
+              No matching record was found. Please try a different search term.
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Search Result</CardTitle>
+    <Card className="w-full border-green-300 shadow-md overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
+        <CardTitle className="text-green-700 flex items-center">
+          <FileSpreadsheet className="h-5 w-5 mr-2" /> Search Result
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-4">
+      <CardContent className="bg-gradient-to-b from-white to-green-50">
+        <div className="grid gap-4 p-2">
           {headers.map((header) => (
-            <div key={header} className="grid grid-cols-3 gap-4 items-center border-b pb-2">
-              <div className="font-medium">{header}</div>
-              <div className="col-span-2">{result[header] || 'N/A'}</div>
+            <div 
+              key={header} 
+              className="grid grid-cols-3 gap-4 items-center border-b border-green-100 pb-2 hover:bg-white/80 rounded px-2"
+            >
+              <div className="font-medium text-green-700">{header}</div>
+              <div className="col-span-2 text-blue-700">{result[header] || 'N/A'}</div>
             </div>
           ))}
         </div>
