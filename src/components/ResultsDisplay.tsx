@@ -91,24 +91,30 @@ const ResultsDisplay = ({
   }
 
   return (
-    <Card className="w-full border-green-300 shadow-md overflow-hidden">
+    <Card className="w-full border-red-300 shadow-md overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
         <CardTitle className="text-green-700 flex items-center">
           <FileSpreadsheet className="h-5 w-5 mr-2" /> Search Result
         </CardTitle>
       </CardHeader>
       <CardContent className="bg-gradient-to-b from-white to-green-50">
-        <div className="grid gap-4 p-2">
-          {headers.map((header) => (
-            <div 
-              key={header} 
-              className="grid grid-cols-3 gap-4 items-center border-b border-green-100 pb-2 hover:bg-white/80 rounded px-2"
-            >
-              <div className="font-medium text-green-700">{header}</div>
-              <div className="col-span-2 text-blue-700">{result[header] || 'N/A'}</div>
-            </div>
-          ))}
-        </div>
+        {headers.length > 0 ? (
+          <div className="grid gap-4 p-2">
+            {headers.map((header) => (
+              <div 
+                key={header} 
+                className="grid grid-cols-3 gap-4 items-center border-b border-green-100 pb-2 hover:bg-white/80 rounded px-2"
+              >
+                <div className="font-medium text-green-700">{header}</div>
+                <div className="col-span-2 text-blue-700">{result[header] || 'N/A'}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-4 text-red-600">
+            No data headers found. Please check the selected sheet data.
+          </div>
+        )}
       </CardContent>
     </Card>
   );

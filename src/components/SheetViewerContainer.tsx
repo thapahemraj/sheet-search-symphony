@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import GoogleSheetsDialog from "./GoogleSheetsDialog";
 import { Button } from "@/components/ui/button";
-import { Settings, Database } from "lucide-react";
+import { RefreshCw, Settings, Database } from "lucide-react";
 
 const SheetViewerContainer = () => {
   const [selectedSheetId, setSelectedSheetId] = useState<string>("");
@@ -30,10 +30,19 @@ const SheetViewerContainer = () => {
   const loadAvailableSheets = async () => {
     try {
       setLoading(true);
+      setError(null);
       const sheets = await getAvailableSheets(currentSheetId);
       setAvailableSheets(sheets);
+      
+      if (sheets.length > 0) {
+        toast({
+          title: "Sheets Loaded",
+          description: `Found ${sheets.length} sheets in the spreadsheet`,
+        });
+      }
     } catch (error) {
       console.error("Failed to load available sheets:", error);
+      setError("Could not load sheets. Please check the Sheet ID.");
       toast({
         title: "Error",
         description: "Could not load sheets. Please check the Sheet ID.",
@@ -52,11 +61,13 @@ const SheetViewerContainer = () => {
     
     try {
       setLoading(true);
+      console.log("Fetching data for selected sheet:", sheetId);
       const data = await getSheetData(sheetId);
+      console.log("Sheet data received:", data);
       setSheetData(data);
       
       // Set the ID column name (assuming first column is the ID)
-      if (data && data.headers.length > 0) {
+      if (data && data.headers && data.headers.length > 0) {
         setIdColumnName(data.headers[0]);
       }
       
@@ -72,6 +83,7 @@ const SheetViewerContainer = () => {
         description: "Failed to load sheet data",
         variant: "destructive",
       });
+      setSheetData(null);
     } finally {
       setLoading(false);
     }
@@ -137,9 +149,16 @@ const SheetViewerContainer = () => {
     }
   };
 
+  const handleRefresh = () => {
+    loadAvailableSheets();
+    if (selectedSheetId) {
+      handleSheetSelect(selectedSheetId);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8 w-full max-w-4xl">
-      <Card className="overflow-hidden border-b-4 border-green-500 shadow-lg bg-gradient-to-br from-white to-blue-50">
+      <Card className="overflow-hidden border-b-4 border-red-500 shadow-lg bg-gradient-to-br from-white to-blue-50">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-green-200 to-transparent opacity-30 rounded-bl-full"></div>
         <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-green-50 to-blue-50">
           <div className="z-10">
@@ -150,15 +169,26 @@ const SheetViewerContainer = () => {
               Select a sheet and search by ID to view the data
             </CardDescription>
           </div>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={() => setIsDialogOpen(true)}
-            title="Configure Google Sheet"
-            className="border-green-300 bg-green-50 hover:bg-green-100 text-green-700 z-10"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2 z-10">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleRefresh}
+              title="Refresh Sheets"
+              className="border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={() => setIsDialogOpen(true)}
+              title="Configure Google Sheet"
+              className="border-green-300 bg-green-50 hover:bg-green-100 text-green-700"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6 relative z-10">
           <div className="bg-white/70 p-4 rounded-lg shadow-sm border border-green-100">

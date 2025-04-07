@@ -67,11 +67,12 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
       throw new Error(error.message);
     }
 
-    console.log("Sheet data fetched successfully");
-    if (!data || !data.headers || !data.rows) {
-      throw new Error("Invalid data format returned from API");
+    if (!data) {
+      throw new Error("No data returned from API");
     }
 
+    console.log("Sheet data fetched successfully:", data);
+    
     return {
       headers: data.headers || [],
       rows: data.rows || [],

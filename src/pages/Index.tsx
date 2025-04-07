@@ -17,10 +17,10 @@ const Index = () => {
         <header className="mb-12 relative">
           <div className="absolute -top-6 -left-6 w-20 h-20 bg-gradient-to-br from-green-500/10 to-blue-500/10 rounded-full blur-md"></div>
           <div className="relative z-10 flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-green-500 to-blue-600 p-3 rounded-2xl shadow-lg transform -rotate-6 mr-4">
+            <div className="bg-gradient-to-r from-green-500 to-red-600 p-3 rounded-2xl shadow-lg transform -rotate-6 mr-4">
               <FileSpreadsheet className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-700 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-red-700 bg-clip-text text-transparent">
               Sheet Search Symphony
             </h1>
           </div>
@@ -28,7 +28,7 @@ const Index = () => {
             Seamlessly search and view data from your Google Sheets with our modern interface
           </p>
           
-          <div className="w-32 h-1 bg-gradient-to-r from-green-500 to-blue-600 mx-auto mt-4 rounded-full"></div>
+          <div className="w-32 h-1 bg-gradient-to-r from-green-500 to-red-600 mx-auto mt-4 rounded-full"></div>
         </header>
         
         <main className="relative">
@@ -36,7 +36,7 @@ const Index = () => {
         </main>
         
         <footer className="mt-16 text-center">
-          <div className="w-24 h-1 bg-gradient-to-r from-green-300 to-blue-400 mx-auto mb-6 rounded-full"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-green-300 to-red-400 mx-auto mb-6 rounded-full"></div>
           <p className="text-sm text-blue-600">
             © {new Date().getFullYear()} Sheet Search Symphony. All rights reserved.
           </p>

@@ -41,6 +41,11 @@ serve(async (req) => {
       }
       
       const data = await response.json();
+      if (!data.sheets || !Array.isArray(data.sheets)) {
+        console.error("Invalid data format received from Google Sheets API:", data);
+        throw new Error("Invalid data format received from Google Sheets API");
+      }
+      
       const sheets = data.sheets.map((sheet: any) => ({
         id: sheet.properties.sheetId.toString(),
         name: sheet.properties.title,
@@ -53,12 +58,19 @@ serve(async (req) => {
     } 
     else if (action === "getSheetData") {
       // Fetch data from specific sheet
+      if (!sheetName) {
+        console.error("Sheet name is required for getSheetData");
+        throw new Error("Sheet name is required");
+      }
+      
       let apiRange = sheetName;
       if (range) {
         apiRange += `!${range}`;
       }
       
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${apiRange}?key=${GOOGLE_API_KEY}`;
+      // URL encode the sheet name to handle special characters
+      const encodedSheetName = encodeURIComponent(apiRange);
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodedSheetName}?key=${GOOGLE_API_KEY}`;
       console.log(`Fetching sheet data from: ${url}`);
       
       const response = await fetch(url);
@@ -70,6 +82,8 @@ serve(async (req) => {
       }
       
       const data = await response.json();
+      console.log("Raw sheet data response:", JSON.stringify(data).substring(0, 200) + "...");
+      
       const values = data.values || [];
       
       if (values.length === 0) {
@@ -92,12 +106,14 @@ serve(async (req) => {
       });
       
       console.log(`Successfully processed ${rows.length} rows with ${headers.length} columns`);
+      const responseData = { 
+        sheetName, 
+        headers, 
+        rows 
+      };
+      
       return new Response(
-        JSON.stringify({ 
-          sheetName, 
-          headers, 
-          rows 
-        }),
+        JSON.stringify(responseData),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

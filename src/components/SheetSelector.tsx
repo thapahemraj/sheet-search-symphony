@@ -33,7 +33,7 @@ const SheetSelector = ({ onSheetSelect, availableSheets, loading }: SheetSelecto
     <div className="flex items-center gap-3">
       <div className="w-full max-w-xs">
         <Select onValueChange={onSheetSelect}>
-          <SelectTrigger className="w-full border-green-300 focus:border-blue-500 focus:ring-blue-500">
+          <SelectTrigger className="w-full border-green-300 focus:border-red-500 focus:ring-red-500">
             <SelectValue placeholder="Select a sheet" />
           </SelectTrigger>
           <SelectContent className="bg-white border-green-200">
