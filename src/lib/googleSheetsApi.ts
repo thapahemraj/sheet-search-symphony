@@ -13,6 +13,7 @@ const SHEET_ID = "1olSuKVcD6e-I9AI7qWR41d-gaHYKtn2PU_9B-uKYcl0";
 // Get available sheets in the spreadsheet
 export const getAvailableSheets = async (): Promise<{id: string, name: string}[]> => {
   try {
+    console.log("Fetching available sheets...");
     const { data, error } = await supabase.functions.invoke('google-sheets', {
       body: {
         action: "getAvailableSheets",
@@ -25,6 +26,7 @@ export const getAvailableSheets = async (): Promise<{id: string, name: string}[]
       throw new Error(error.message);
     }
 
+    console.log("Sheets fetched successfully:", data.sheets);
     return data.sheets || [];
   } catch (err) {
     console.error("Failed to fetch sheets:", err);
@@ -40,6 +42,7 @@ export const getAvailableSheets = async (): Promise<{id: string, name: string}[]
 // Get data from a specific sheet
 export const getSheetData = async (sheetId: string): Promise<SheetData | null> => {
   try {
+    console.log(`Fetching data for sheet ID: ${sheetId}`);
     // First, get the available sheets to find the sheet name
     const sheets = await getAvailableSheets();
     const sheet = sheets.find(s => s.id === sheetId);
@@ -48,6 +51,7 @@ export const getSheetData = async (sheetId: string): Promise<SheetData | null> =
       throw new Error(`Sheet with ID ${sheetId} not found`);
     }
 
+    console.log(`Found sheet: ${sheet.name}, fetching data...`);
     const { data, error } = await supabase.functions.invoke('google-sheets', {
       body: {
         action: "getSheetData",
@@ -61,6 +65,7 @@ export const getSheetData = async (sheetId: string): Promise<SheetData | null> =
       throw new Error(error.message);
     }
 
+    console.log("Sheet data fetched successfully");
     return {
       headers: data.headers || [],
       rows: data.rows || [],

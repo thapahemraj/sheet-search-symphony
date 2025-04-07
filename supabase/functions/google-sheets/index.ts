@@ -2,7 +2,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
-const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY") || "";
+// Get the Google API key from environment variables
+const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -11,22 +12,31 @@ serve(async (req) => {
   }
 
   try {
-    const { action, sheetId, sheetName, range } = await req.json();
+    // Log that we're starting the request and check if API key exists
+    console.log("Starting Google Sheets function");
     
     if (!GOOGLE_API_KEY) {
+      console.error("Missing Google API key");
       return new Response(
         JSON.stringify({ error: "Google API key is not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    // Parse the request body
+    const { action, sheetId, sheetName, range } = await req.json();
+    console.log(`Processing ${action} request for sheet: ${sheetId}, ${sheetName || ""}`);
+    
     if (action === "getAvailableSheets") {
       // Fetch spreadsheet metadata to get available sheets
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${GOOGLE_API_KEY}`;
+      console.log(`Fetching sheets from: ${url}`);
+      
       const response = await fetch(url);
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`API error (${response.status}): ${errorText}`);
         throw new Error(`Failed to fetch sheets: ${errorText}`);
       }
       
@@ -36,6 +46,7 @@ serve(async (req) => {
         name: sheet.properties.title,
       }));
       
+      console.log(`Found ${sheets.length} sheets`);
       return new Response(JSON.stringify({ sheets }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -48,10 +59,13 @@ serve(async (req) => {
       }
       
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${apiRange}?key=${GOOGLE_API_KEY}`;
+      console.log(`Fetching sheet data from: ${url}`);
+      
       const response = await fetch(url);
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`API error (${response.status}): ${errorText}`);
         throw new Error(`Failed to fetch sheet data: ${errorText}`);
       }
       
@@ -59,7 +73,8 @@ serve(async (req) => {
       const values = data.values || [];
       
       if (values.length === 0) {
-        return new Response(JSON.stringify({ headers: [], rows: [] }), {
+        console.log("No data found in sheet");
+        return new Response(JSON.stringify({ headers: [], rows: [], sheetName }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -76,6 +91,7 @@ serve(async (req) => {
         return rowObj;
       });
       
+      console.log(`Successfully processed ${rows.length} rows with ${headers.length} columns`);
       return new Response(
         JSON.stringify({ 
           sheetName, 
@@ -86,12 +102,13 @@ serve(async (req) => {
       );
     }
     
+    console.error(`Invalid action: ${action}`);
     return new Response(JSON.stringify({ error: "Invalid action" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error processing request:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
