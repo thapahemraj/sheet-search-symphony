@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SheetData {
@@ -7,23 +6,30 @@ export interface SheetData {
   sheetName: string;
 }
 
-// Set your Google Sheet ID here
-const SHEET_ID = "1olSuKVcD6e-I9AI7qWR41d-gaHYKtn2PU_9B-uKYcl0";
+// Default Sheet ID - can be overridden when calling functions
+let currentSheetId = "1olSuKVcD6e-I9AI7qWR41d-gaHYKtn2PU_9B-uKYcl0";
 
 // Get available sheets in the spreadsheet
-export const getAvailableSheets = async (): Promise<{id: string, name: string}[]> => {
+export const getAvailableSheets = async (sheetId?: string): Promise<{id: string, name: string}[]> => {
+  const targetSheetId = sheetId || currentSheetId;
+  
   try {
-    console.log("Fetching available sheets...");
+    console.log(`Fetching available sheets for Sheet ID: ${targetSheetId}...`);
     const { data, error } = await supabase.functions.invoke('google-sheets', {
       body: {
         action: "getAvailableSheets",
-        sheetId: SHEET_ID,
+        sheetId: targetSheetId,
       }
     });
 
     if (error) {
       console.error("Error fetching available sheets:", error);
       throw new Error(error.message);
+    }
+
+    // Update the current sheet ID if successful and a new one was provided
+    if (sheetId) {
+      currentSheetId = sheetId;
     }
 
     console.log("Sheets fetched successfully:", data.sheets);
@@ -55,7 +61,7 @@ export const getSheetData = async (sheetId: string): Promise<SheetData | null> =
     const { data, error } = await supabase.functions.invoke('google-sheets', {
       body: {
         action: "getSheetData",
-        sheetId: SHEET_ID,
+        sheetId: currentSheetId,
         sheetName: sheet.name,
       }
     });
