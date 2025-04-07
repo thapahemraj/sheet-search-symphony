@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { getAvailableSheets } from "@/lib/googleSheetsApi";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SheetSelectorProps {
   onSheetSelect: (sheetId: string) => void;
@@ -20,9 +22,9 @@ const SheetSelector = ({ onSheetSelect }: SheetSelectorProps) => {
         const availableSheets = await getAvailableSheets();
         setSheets(availableSheets);
         setError(null);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to fetch sheets:", err);
-        setError("Failed to load available sheets. Please try again.");
+        setError("Failed to load available sheets: " + (err.message || "Unknown error"));
       } finally {
         setLoading(false);
       }
@@ -36,7 +38,22 @@ const SheetSelector = ({ onSheetSelect }: SheetSelectorProps) => {
   }
 
   if (error) {
-    return <div className="text-destructive">{error}</div>;
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (sheets.length === 0) {
+    return (
+      <Alert className="mb-4">
+        <AlertDescription>
+          No sheets found in the spreadsheet. Please check if the spreadsheet exists and contains data.
+        </AlertDescription>
+      </Alert>
+    );
   }
 
   return (
