@@ -43,9 +43,9 @@ const GoogleSheetsDialog = ({
       
       if (sheets.length === 0) {
         toast({
-          title: "Warning",
-          description: "No sheets found in this Google Sheet",
-          variant: "destructive",
+          title: "Info",
+          description: "No sheets found in this Google Sheet. Please check the ID.",
+          variant: "default",
         });
       } else {
         toast({
@@ -56,10 +56,11 @@ const GoogleSheetsDialog = ({
       }
     } catch (error) {
       console.error("Error validating sheet ID:", error);
+      setAvailableSheets([]);
       toast({
-        title: "Error",
-        description: "Invalid Google Sheet ID or access denied",
-        variant: "destructive",
+        title: "Info",
+        description: "Please enter a valid Google Sheet ID",
+        variant: "default",
       });
       setIsValidating(false);
     }
@@ -69,18 +70,9 @@ const GoogleSheetsDialog = ({
     e.preventDefault();
     if (!sheetId.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a valid Google Sheet ID",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (availableSheets.length === 0) {
-      toast({
-        title: "Warning",
-        description: "This Sheet ID doesn't contain any accessible sheets",
-        variant: "destructive",
+        title: "Info",
+        description: "Please enter a Google Sheet ID",
+        variant: "default",
       });
       return;
     }

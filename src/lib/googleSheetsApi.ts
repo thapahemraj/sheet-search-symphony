@@ -26,7 +26,7 @@ export const getAvailableSheets = async (sheetId?: string): Promise<{id: string,
 
     if (error) {
       console.error("Error fetching available sheets:", error);
-      throw new Error(error.message);
+      return []; // Return empty array instead of throwing
     }
 
     // Update the current sheet ID if successful and a new one was provided
@@ -34,11 +34,11 @@ export const getAvailableSheets = async (sheetId?: string): Promise<{id: string,
       currentSheetId = sheetId;
     }
 
-    console.log("Sheets fetched successfully:", data.sheets);
-    return data.sheets || [];
+    console.log("Sheets fetched successfully:", data?.sheets || []);
+    return data?.sheets || [];
   } catch (err) {
     console.error("Failed to fetch sheets:", err);
-    throw new Error(`Failed to fetch sheets: ${err.message || "Unknown error"}`);
+    return []; // Return empty array instead of throwing
   }
 };
 
@@ -51,7 +51,11 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
     const sheet = sheets.find(s => s.id === sheetId);
     
     if (!sheet) {
-      throw new Error(`Sheet with ID ${sheetId} not found`);
+      return {
+        headers: [],
+        rows: [],
+        sheetName: "Unknown Sheet"
+      };
     }
 
     console.log(`Found sheet: ${sheet.name}, fetching data...`);
@@ -65,11 +69,20 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
 
     if (error) {
       console.error("Error fetching sheet data:", error);
-      throw new Error(error.message);
+      return {
+        headers: [],
+        rows: [],
+        sheetName: sheet.name
+      };
     }
 
     if (!data) {
-      throw new Error("No data returned from API");
+      console.log("No data returned from API");
+      return {
+        headers: [],
+        rows: [],
+        sheetName: sheet.name
+      };
     }
 
     console.log("Sheet data fetched successfully:", data);
@@ -81,7 +94,11 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
     };
   } catch (err) {
     console.error("Failed to fetch sheet data:", err);
-    throw new Error(`Failed to fetch sheet data: ${err.message || "Unknown error"}`);
+    return {
+      headers: [],
+      rows: [],
+      sheetName: "Error Sheet"
+    };
   }
 };
 

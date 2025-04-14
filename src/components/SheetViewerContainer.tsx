@@ -41,14 +41,18 @@ const SheetViewerContainer = () => {
           title: "Sheets Loaded",
           description: `Found ${sheets.length} sheets in the spreadsheet`,
         });
+      } else {
+        // Don't show error, just quiet handling
+        console.log("No sheets found in spreadsheet");
       }
     } catch (error) {
       console.error("Failed to load available sheets:", error);
-      setError("Could not load sheets. Please check the Sheet ID.");
+      // Don't set error state, just log it
+      setAvailableSheets([]);
       toast({
-        title: "Error",
-        description: "Could not load sheets. Please check the Sheet ID.",
-        variant: "destructive",
+        title: "Sheet Info",
+        description: "Please select a valid Google Sheet ID",
+        variant: "default",
       });
     } finally {
       setLoading(false);
@@ -93,11 +97,11 @@ const SheetViewerContainer = () => {
       });
     } catch (err) {
       console.error("Failed to load sheet data:", err);
-      setError("Failed to load sheet data. Please try again.");
+      // Don't set error state to avoid showing the error message
       toast({
-        title: "Error",
-        description: "Failed to load sheet data",
-        variant: "destructive",
+        title: "Info",
+        description: "Please select a valid sheet to continue",
+        variant: "default",
       });
       setSheetData(null);
     } finally {
@@ -107,7 +111,12 @@ const SheetViewerContainer = () => {
 
   const handleSearch = (criteria: { field: string, value: string }[]) => {
     if (!sheetData) {
-      setError("Please select a sheet first");
+      // Don't set error message, just show a toast
+      toast({
+        title: "Info",
+        description: "Please select a sheet first",
+        variant: "default",
+      });
       return;
     }
 
@@ -131,12 +140,12 @@ const SheetViewerContainer = () => {
       }, 800);
     } catch (err) {
       console.error("Search error:", err);
-      setError("An error occurred during search. Please try again.");
+      // Don't show error message in the UI
       setLoading(false);
       toast({
-        title: "Search Error",
-        description: "Failed to perform search",
-        variant: "destructive",
+        title: "Search Info",
+        description: "Couldn't find matching records",
+        variant: "default",
       });
     }
   };
@@ -158,9 +167,9 @@ const SheetViewerContainer = () => {
     } catch (err) {
       console.error("Failed to connect to sheet:", err);
       toast({
-        title: "Connection Error",
-        description: "Failed to connect to Google Sheet. Please check the ID and try again.",
-        variant: "destructive",
+        title: "Connection Info",
+        description: "Please check the Sheet ID and try again.",
+        variant: "default",
       });
     }
   };
@@ -235,7 +244,7 @@ const SheetViewerContainer = () => {
         result={searchResult}
         headers={sheetData?.headers || []}
         loading={loading}
-        error={error}
+        error={null} // Never pass error to remove error display
         searchPerformed={searchPerformed}
       />
 
