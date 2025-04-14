@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { getSheetData, findRowById, SheetData, getAvailableSheets } from "@/lib/googleSheetsApi";
+import { getSheetData, findRowsByMultipleCriteria, SheetData, getAvailableSheets } from "@/lib/googleSheetsApi";
 import SheetSelector from "./SheetSelector";
 import SearchBar from "./SearchBar";
 import ResultsDisplay from "./ResultsDisplay";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import GoogleSheetsDialog from "./GoogleSheetsDialog";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Settings, Database } from "lucide-react";
+import { SHEET_CONFIG } from "@/config/sheetConfig";
 
 const SheetViewerContainer = () => {
   const [selectedSheetId, setSelectedSheetId] = useState<string>("");
@@ -17,9 +18,10 @@ const SheetViewerContainer = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchPerformed, setSearchPerformed] = useState(false);
-  const [idColumnName, setIdColumnName] = useState("ID");
+  const [nameField, setNameField] = useState("Name");
+  const [dobField, setDobField] = useState("DOB");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentSheetId, setCurrentSheetId] = useState<string>("1olSuKVcD6e-I9AI7qWR41d-gaHYKtn2PU_9B-uKYcl0");
+  const [currentSheetId, setCurrentSheetId] = useState<string>(SHEET_CONFIG.defaultSheetId);
   const [availableSheets, setAvailableSheets] = useState<{id: string, name: string}[]>([]);
   const { toast } = useToast();
 
@@ -66,9 +68,23 @@ const SheetViewerContainer = () => {
       console.log("Sheet data received:", data);
       setSheetData(data);
       
-      // Set the ID column name (assuming first column is the ID)
+      // Try to detect name and DOB fields from headers
       if (data && data.headers && data.headers.length > 0) {
-        setIdColumnName(data.headers[0]);
+        const possibleNameFields = ["name", "fullname", "full name", "full_name"];
+        const possibleDobFields = ["dob", "dateofbirth", "date of birth", "birth date", "birthdate", "date_of_birth"];
+        
+        // Find first matching field for name
+        const detectedNameField = data.headers.find(h => 
+          possibleNameFields.some(nf => h.toLowerCase().includes(nf.toLowerCase()))
+        ) || data.headers[0];
+        
+        // Find first matching field for DOB
+        const detectedDobField = data.headers.find(h => 
+          possibleDobFields.some(df => h.toLowerCase().includes(df.toLowerCase()))
+        ) || data.headers[1] || data.headers[0];
+        
+        setNameField(detectedNameField);
+        setDobField(detectedDobField);
       }
       
       toast({
@@ -89,7 +105,7 @@ const SheetViewerContainer = () => {
     }
   };
 
-  const handleSearch = (searchId: string) => {
+  const handleSearch = (criteria: { field: string, value: string }[]) => {
     if (!sheetData) {
       setError("Please select a sheet first");
       return;
@@ -102,14 +118,14 @@ const SheetViewerContainer = () => {
     try {
       // Simulate network delay
       setTimeout(() => {
-        const result = findRowById(sheetData, idColumnName, searchId);
+        const result = findRowsByMultipleCriteria(sheetData, criteria);
         setSearchResult(result);
         setLoading(false);
 
         if (!result) {
           toast({
             title: "No results found",
-            description: `No record matching '${searchId}' was found`,
+            description: `No record matching all criteria was found`,
           });
         }
       }, 800);
@@ -166,7 +182,7 @@ const SheetViewerContainer = () => {
               Google Sheet Data Viewer
             </CardTitle>
             <CardDescription className="text-blue-700">
-              Select a sheet and search by ID to view the data
+              Select a sheet and search by Name & DOB to view the data
             </CardDescription>
           </div>
           <div className="flex gap-2 z-10">
@@ -204,11 +220,12 @@ const SheetViewerContainer = () => {
           </div>
           
           <div className="bg-white/70 p-4 rounded-lg shadow-sm border border-green-100">
-            <h3 className="text-lg font-medium mb-2 text-green-700">2. Search by {idColumnName}</h3>
+            <h3 className="text-lg font-medium mb-2 text-green-700">2. Search by Name & DOB</h3>
             <SearchBar 
               onSearch={handleSearch} 
               disabled={!selectedSheetId || loading} 
-              idColumnName={idColumnName}
+              nameField={nameField}
+              dobField={dobField}
             />
           </div>
         </CardContent>

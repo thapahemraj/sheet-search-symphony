@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { SHEET_CONFIG } from "@/config/sheetConfig";
 
 export interface SheetData {
   headers: string[];
@@ -7,8 +8,8 @@ export interface SheetData {
   sheetName: string;
 }
 
-// Default Sheet ID - can be overridden when calling functions
-let currentSheetId = "1olSuKVcD6e-I9AI7qWR41d-gaHYKtn2PU_9B-uKYcl0";
+// Use the configuration value for the Sheet ID
+let currentSheetId = SHEET_CONFIG.defaultSheetId;
 
 // Get available sheets in the spreadsheet
 export const getAvailableSheets = async (sheetId?: string): Promise<{id: string, name: string}[]> => {
@@ -84,15 +85,17 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
   }
 };
 
-// Find a specific row by ID in the sheet data
-export const findRowById = (
-  sheetData: SheetData, 
-  idColumnName: string, 
-  searchId: string
+// Find rows by multiple criteria (e.g. name AND DOB)
+export const findRowsByMultipleCriteria = (
+  sheetData: SheetData,
+  criteria: { field: string, value: string }[]
 ): Record<string, string> | null => {
-  if (!sheetData || !sheetData.rows || !searchId) return null;
+  if (!sheetData || !sheetData.rows || criteria.length === 0) return null;
   
   return sheetData.rows.find(row => 
-    row[idColumnName] && row[idColumnName].toLowerCase() === searchId.toLowerCase()
+    criteria.every(criterion => 
+      row[criterion.field] && 
+      row[criterion.field].toLowerCase() === criterion.value.toLowerCase()
+    )
   ) || null;
 };
