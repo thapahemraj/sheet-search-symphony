@@ -1,3 +1,4 @@
+import { getConfig } from './customization';
 
 export interface SheetData {
   headers: string[];
@@ -5,16 +6,14 @@ export interface SheetData {
   sheetName: string;
 }
 
-// Use the configuration value for the Sheet ID
-let currentSheetId = import.meta.env.VITE_SHEET_ID || '';
-
 // Get available sheets in the spreadsheet
 export const getAvailableSheets = async (sheetId?: string): Promise<{id: string, name: string}[]> => {
-  const targetSheetId = sheetId || currentSheetId;
+  const config = getConfig();
+  const targetSheetId = sheetId || config.sheetId;
   
   try {
     console.log(`Fetching available sheets for Sheet ID: ${targetSheetId}...`);
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${targetSheetId}?key=${import.meta.env.VITE_GOOGLE_API_KEY}`);
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${targetSheetId}?key=${config.googleApiKey}`);
     
     if (!response.ok) {
       console.error("Error fetching sheets:", await response.text());
@@ -27,11 +26,6 @@ export const getAvailableSheets = async (sheetId?: string): Promise<{id: string,
       name: sheet.properties.title,
     }));
 
-    // Update the current sheet ID if successful and a new one was provided
-    if (sheetId) {
-      currentSheetId = sheetId;
-    }
-
     console.log("Sheets fetched successfully:", sheets);
     return sheets;
   } catch (err) {
@@ -42,44 +36,33 @@ export const getAvailableSheets = async (sheetId?: string): Promise<{id: string,
 
 // Get data from a specific sheet
 export const getSheetData = async (sheetId: string): Promise<SheetData> => {
+  const config = getConfig();
+  
   try {
     console.log(`Fetching data for sheet ID: ${sheetId}`);
-    // First, get the available sheets to find the sheet name
     const sheets = await getAvailableSheets();
     const sheet = sheets.find(s => s.id === sheetId);
     
     if (!sheet) {
-      return {
-        headers: [],
-        rows: [],
-        sheetName: "Unknown Sheet"
-      };
+      return { headers: [], rows: [], sheetName: "Unknown Sheet" };
     }
 
     console.log(`Found sheet: ${sheet.name}, fetching data...`);
     const encodedSheetName = encodeURIComponent(sheet.name);
     const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${currentSheetId}/values/${encodedSheetName}?key=${import.meta.env.VITE_GOOGLE_API_KEY}`
+      `https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}/values/${encodedSheetName}?key=${config.googleApiKey}`
     );
 
     if (!response.ok) {
       console.error("Error fetching sheet data:", await response.text());
-      return {
-        headers: [],
-        rows: [],
-        sheetName: sheet.name
-      };
+      return { headers: [], rows: [], sheetName: sheet.name };
     }
 
     const data = await response.json();
     
     if (!data.values || data.values.length === 0) {
       console.log("No data returned from API");
-      return {
-        headers: [],
-        rows: [],
-        sheetName: sheet.name
-      };
+      return { headers: [], rows: [], sheetName: sheet.name };
     }
 
     const headers = data.values[0];
@@ -94,8 +77,8 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
     console.log("Sheet data fetched successfully");
     
     return {
-      headers: headers,
-      rows: rows,
+      headers,
+      rows,
       sheetName: sheet.name,
     };
   } catch (err) {

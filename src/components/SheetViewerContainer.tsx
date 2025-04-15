@@ -5,34 +5,31 @@ import SearchBar from "./SearchBar";
 import ResultsDisplay from "./ResultsDisplay";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import GoogleSheetsDialog from "./GoogleSheetsDialog";
+import ConfigurationDialog from "./ConfigurationDialog";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Settings, Database } from "lucide-react";
-import { SHEET_CONFIG } from "@/config/sheetConfig";
+import { Settings, Database } from "lucide-react";
+import { getConfig } from "@/lib/customization";
 
 const SheetViewerContainer = () => {
   const [selectedSheetId, setSelectedSheetId] = useState<string>("");
   const [sheetData, setSheetData] = useState<SheetData | null>(null);
   const [searchResult, setSearchResult] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [searchPerformed, setSearchPerformed] = useState(false);
-  const [nameField, setNameField] = useState("Name");
-  const [dobField, setDobField] = useState("DOB");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentSheetId, setCurrentSheetId] = useState<string>(SHEET_CONFIG.defaultSheetId);
   const [availableSheets, setAvailableSheets] = useState<{id: string, name: string}[]>([]);
   const { toast } = useToast();
-
-  useEffect(() => {
-    loadAvailableSheets();
-  }, [currentSheetId]);
 
   const loadAvailableSheets = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const sheets = await getAvailableSheets(currentSheetId);
+      const config = getConfig();
+      if (!config.googleApiKey || !config.sheetId) {
+        setIsDialogOpen(true);
+        return;
+      }
+      
+      const sheets = await getAvailableSheets();
       setAvailableSheets(sheets);
       
       if (sheets.length > 0) {
@@ -40,21 +37,24 @@ const SheetViewerContainer = () => {
           title: "Sheets Loaded",
           description: `Found ${sheets.length} sheets in the spreadsheet`,
         });
-      } else {
-        console.log("No sheets found in spreadsheet");
       }
     } catch (error) {
       console.error("Failed to load available sheets:", error);
       setAvailableSheets([]);
       toast({
-        title: "Sheet Info",
-        description: "Please select a valid Google Sheet ID",
-        variant: "default",
+        title: "Configuration Required",
+        description: "Please configure your Google Sheets settings",
+        variant: "destructive",
       });
+      setIsDialogOpen(true);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadAvailableSheets();
+  }, []);
 
   const handleSheetSelect = async (sheetId: string) => {
     setSelectedSheetId(sheetId);
@@ -140,35 +140,8 @@ const SheetViewerContainer = () => {
     }
   };
 
-  const handleSheetIdChange = async (newSheetId: string) => {
-    try {
-      setCurrentSheetId(newSheetId);
-      setSelectedSheetId("");
-      setSheetData(null);
-      setSearchResult(null);
-      setSearchPerformed(false);
-      
-      toast({
-        title: "Connecting to Sheet",
-        description: "Trying to connect to the specified Google Sheet...",
-      });
-      
-      loadAvailableSheets();
-    } catch (err) {
-      console.error("Failed to connect to sheet:", err);
-      toast({
-        title: "Connection Info",
-        description: "Please check the Sheet ID and try again.",
-        variant: "default",
-      });
-    }
-  };
-
-  const handleRefresh = () => {
+  const handleConfigSaved = () => {
     loadAvailableSheets();
-    if (selectedSheetId) {
-      handleSheetSelect(selectedSheetId);
-    }
   };
 
   return (
@@ -181,19 +154,10 @@ const SheetViewerContainer = () => {
               Google Sheet Data Viewer
             </CardTitle>
             <CardDescription className="text-blue-700">
-              Select a sheet and search by Name & DOB to view the data
+              Select a sheet and search by columns to view the data
             </CardDescription>
           </div>
           <div className="flex gap-2 z-10">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={handleRefresh}
-              title="Refresh Sheets"
-              className="border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
             <Button 
               variant="outline" 
               size="icon" 
@@ -237,11 +201,10 @@ const SheetViewerContainer = () => {
         searchPerformed={searchPerformed}
       />
 
-      <GoogleSheetsDialog
+      <ConfigurationDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        onSheetIdSubmit={handleSheetIdChange}
-        defaultSheetId={currentSheetId}
+        onConfigSaved={handleConfigSaved}
       />
     </div>
   );
