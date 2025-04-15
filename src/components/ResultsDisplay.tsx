@@ -1,7 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileSpreadsheet, AlertCircle, Search } from "lucide-react";
+import { FileSpreadsheet, AlertCircle, Search, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ResultsDisplayProps {
   result: Record<string, string> | null;
@@ -62,9 +62,9 @@ const ResultsDisplay = ({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <FileSpreadsheet className="h-16 w-16 text-blue-300 mb-4" />
+            <FileSpreadsheet className="h-16 w-16 text-blue-300 mb-4 animate-pulse" />
             <p className="text-blue-600">
-              Select a sheet and search by ID to view results.
+              Select columns and enter search values to view results
             </p>
           </div>
         </CardContent>
@@ -82,7 +82,7 @@ const ResultsDisplay = ({
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Search className="h-12 w-12 text-amber-300 mb-4" />
             <p className="text-amber-600">
-              No matching record was found. Please try a different search term.
+              No matching record was found. Please try different search values.
             </p>
           </div>
         </CardContent>
@@ -91,30 +91,27 @@ const ResultsDisplay = ({
   }
 
   return (
-    <Card className="w-full border-red-300 shadow-md overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
+    <Card className="w-full border-green-300 shadow-lg overflow-hidden bg-gradient-to-br from-white to-green-50">
+      <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
         <CardTitle className="text-green-700 flex items-center">
-          <FileSpreadsheet className="h-5 w-5 mr-2" /> Search Result
+          <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" /> Match Found
         </CardTitle>
       </CardHeader>
-      <CardContent className="bg-gradient-to-b from-white to-green-50">
-        {headers.length > 0 ? (
-          <div className="grid gap-4 p-2">
-            {headers.map((header) => (
-              <div 
-                key={header} 
-                className="grid grid-cols-3 gap-4 items-center border-b border-green-100 pb-2 hover:bg-white/80 rounded px-2"
-              >
-                <div className="font-medium text-green-700">{header}</div>
-                <div className="col-span-2 text-blue-700">{result[header] || 'N/A'}</div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-4 text-red-600">
-            No data headers found. Please check the selected sheet data.
-          </div>
-        )}
+      <CardContent className="p-0">
+        <div className="grid gap-0 divide-y divide-green-100">
+          {headers.map((header, index) => (
+            <div 
+              key={header}
+              className={cn(
+                "grid grid-cols-3 items-center p-4 transition-colors hover:bg-green-50/50",
+                index % 2 === 0 ? "bg-white" : "bg-green-50/30"
+              )}
+            >
+              <div className="font-medium text-green-800">{header}</div>
+              <div className="col-span-2 text-blue-700">{result[header] || 'N/A'}</div>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

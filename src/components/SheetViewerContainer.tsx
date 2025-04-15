@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { getSheetData, findRowsByMultipleCriteria, SheetData, getAvailableSheets } from "@/lib/googleSheetsApi";
 import SheetSelector from "./SheetSelector";
@@ -42,12 +41,10 @@ const SheetViewerContainer = () => {
           description: `Found ${sheets.length} sheets in the spreadsheet`,
         });
       } else {
-        // Don't show error, just quiet handling
         console.log("No sheets found in spreadsheet");
       }
     } catch (error) {
       console.error("Failed to load available sheets:", error);
-      // Don't set error state, just log it
       setAvailableSheets([]);
       toast({
         title: "Sheet Info",
@@ -72,17 +69,14 @@ const SheetViewerContainer = () => {
       console.log("Sheet data received:", data);
       setSheetData(data);
       
-      // Try to detect name and DOB fields from headers
       if (data && data.headers && data.headers.length > 0) {
         const possibleNameFields = ["name", "fullname", "full name", "full_name"];
         const possibleDobFields = ["dob", "dateofbirth", "date of birth", "birth date", "birthdate", "date_of_birth"];
         
-        // Find first matching field for name
         const detectedNameField = data.headers.find(h => 
           possibleNameFields.some(nf => h.toLowerCase().includes(nf.toLowerCase()))
         ) || data.headers[0];
         
-        // Find first matching field for DOB
         const detectedDobField = data.headers.find(h => 
           possibleDobFields.some(df => h.toLowerCase().includes(df.toLowerCase()))
         ) || data.headers[1] || data.headers[0];
@@ -97,21 +91,19 @@ const SheetViewerContainer = () => {
       });
     } catch (err) {
       console.error("Failed to load sheet data:", err);
-      // Don't set error state to avoid showing the error message
+      setSheetData(null);
       toast({
         title: "Info",
         description: "Please select a valid sheet to continue",
         variant: "default",
       });
-      setSheetData(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = (criteria: { field: string, value: string }[]) => {
+  const handleSearch = async (criteria: { field: string, value: string }[]) => {
     if (!sheetData) {
-      // Don't set error message, just show a toast
       toast({
         title: "Info",
         description: "Please select a sheet first",
@@ -125,7 +117,6 @@ const SheetViewerContainer = () => {
     setError(null);
 
     try {
-      // Simulate network delay
       setTimeout(() => {
         const result = findRowsByMultipleCriteria(sheetData, criteria);
         setSearchResult(result);
@@ -134,13 +125,12 @@ const SheetViewerContainer = () => {
         if (!result) {
           toast({
             title: "No results found",
-            description: `No record matching all criteria was found`,
+            description: "No record matching all criteria was found",
           });
         }
       }, 800);
     } catch (err) {
       console.error("Search error:", err);
-      // Don't show error message in the UI
       setLoading(false);
       toast({
         title: "Search Info",
@@ -163,7 +153,7 @@ const SheetViewerContainer = () => {
         description: "Trying to connect to the specified Google Sheet...",
       });
       
-      // Reload available sheets with the new sheet ID will happen via useEffect
+      loadAvailableSheets();
     } catch (err) {
       console.error("Failed to connect to sheet:", err);
       toast({
@@ -229,12 +219,11 @@ const SheetViewerContainer = () => {
           </div>
           
           <div className="bg-white/70 p-4 rounded-lg shadow-sm border border-green-100">
-            <h3 className="text-lg font-medium mb-2 text-green-700">2. Search by Name & DOB</h3>
+            <h3 className="text-lg font-medium mb-2 text-green-700">2. Search Records</h3>
             <SearchBar 
               onSearch={handleSearch} 
-              disabled={!selectedSheetId || loading} 
-              nameField={nameField}
-              dobField={dobField}
+              disabled={!selectedSheetId || loading}
+              headers={sheetData?.headers || []}
             />
           </div>
         </CardContent>
@@ -244,7 +233,7 @@ const SheetViewerContainer = () => {
         result={searchResult}
         headers={sheetData?.headers || []}
         loading={loading}
-        error={null} // Never pass error to remove error display
+        error={null}
         searchPerformed={searchPerformed}
       />
 
