@@ -1,7 +1,4 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { SHEET_CONFIG } from "@/config/sheetConfig";
-
 export interface SheetData {
   headers: string[];
   rows: Record<string, string>[];
@@ -9,7 +6,7 @@ export interface SheetData {
 }
 
 // Use the configuration value for the Sheet ID
-let currentSheetId = SHEET_CONFIG.defaultSheetId;
+let currentSheetId = import.meta.env.VITE_SHEET_ID || '';
 
 // Get available sheets in the spreadsheet
 export const getAvailableSheets = async (sheetId?: string): Promise<{id: string, name: string}[]> => {
@@ -17,28 +14,29 @@ export const getAvailableSheets = async (sheetId?: string): Promise<{id: string,
   
   try {
     console.log(`Fetching available sheets for Sheet ID: ${targetSheetId}...`);
-    const { data, error } = await supabase.functions.invoke('google-sheets', {
-      body: {
-        action: "getAvailableSheets",
-        sheetId: targetSheetId,
-      }
-    });
-
-    if (error) {
-      console.error("Error fetching available sheets:", error);
-      return []; // Return empty array instead of throwing
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${targetSheetId}?key=${import.meta.env.VITE_GOOGLE_API_KEY}`);
+    
+    if (!response.ok) {
+      console.error("Error fetching sheets:", await response.text());
+      return [];
     }
+
+    const data = await response.json();
+    const sheets = data.sheets.map((sheet: any) => ({
+      id: sheet.properties.sheetId.toString(),
+      name: sheet.properties.title,
+    }));
 
     // Update the current sheet ID if successful and a new one was provided
     if (sheetId) {
       currentSheetId = sheetId;
     }
 
-    console.log("Sheets fetched successfully:", data?.sheets || []);
-    return data?.sheets || [];
+    console.log("Sheets fetched successfully:", sheets);
+    return sheets;
   } catch (err) {
     console.error("Failed to fetch sheets:", err);
-    return []; // Return empty array instead of throwing
+    return [];
   }
 };
 
@@ -59,16 +57,13 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
     }
 
     console.log(`Found sheet: ${sheet.name}, fetching data...`);
-    const { data, error } = await supabase.functions.invoke('google-sheets', {
-      body: {
-        action: "getSheetData",
-        sheetId: currentSheetId,
-        sheetName: sheet.name,
-      }
-    });
+    const encodedSheetName = encodeURIComponent(sheet.name);
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${currentSheetId}/values/${encodedSheetName}?key=${import.meta.env.VITE_GOOGLE_API_KEY}`
+    );
 
-    if (error) {
-      console.error("Error fetching sheet data:", error);
+    if (!response.ok) {
+      console.error("Error fetching sheet data:", await response.text());
       return {
         headers: [],
         rows: [],
@@ -76,7 +71,9 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
       };
     }
 
-    if (!data) {
+    const data = await response.json();
+    
+    if (!data.values || data.values.length === 0) {
       console.log("No data returned from API");
       return {
         headers: [],
@@ -85,12 +82,21 @@ export const getSheetData = async (sheetId: string): Promise<SheetData> => {
       };
     }
 
-    console.log("Sheet data fetched successfully:", data);
+    const headers = data.values[0];
+    const rows = data.values.slice(1).map((row: any[]) => {
+      const rowObj: Record<string, string> = {};
+      headers.forEach((header: string, index: number) => {
+        rowObj[header] = row[index] || '';
+      });
+      return rowObj;
+    });
+
+    console.log("Sheet data fetched successfully");
     
     return {
-      headers: data.headers || [],
-      rows: data.rows || [],
-      sheetName: data.sheetName || sheet.name,
+      headers: headers,
+      rows: rows,
+      sheetName: sheet.name,
     };
   } catch (err) {
     console.error("Failed to fetch sheet data:", err);
