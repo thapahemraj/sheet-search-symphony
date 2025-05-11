@@ -20,7 +20,7 @@ const GoogleSheetsDialog = ({
   open, 
   onOpenChange, 
   onSheetIdSubmit, 
-  defaultSheetId = "1olSuKVcD6e-I9AI7qWR41d-gaHYKtn2PU_9B-uKYcl0" 
+  defaultSheetId = "1VvBc-6z-5ViSZfCxNYjV9MWvLtJ62kDG_S5tzJi26l0" 
 }: GoogleSheetsDialogProps) => {
   const [sheetId, setSheetId] = useState(defaultSheetId);
   const [isValidating, setIsValidating] = useState(false);
@@ -38,7 +38,7 @@ const GoogleSheetsDialog = ({
     
     setIsValidating(true);
     try {
-      // Modified this line to make sure we're passing the id correctly
+      // Pass the sheet ID as a parameter
       const sheets = await getAvailableSheets(id);
       setAvailableSheets(sheets);
       setIsValidating(false);

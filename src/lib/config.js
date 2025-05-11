@@ -5,7 +5,7 @@
 // Default configuration values
 const defaultConfig = {
   googleApiKey: 'YOUR_GOOGLE_API_KEY', // Replace with your actual API key
-  sheetId: 'YOUR_SHEET_ID', // Replace with your actual Sheet ID
+  sheetId: '1VvBc-6z-5ViSZfCxNYjV9MWvLtJ62kDG_S5tzJi26l0', // New Sheet ID provided by user
   selectedColumns: {
     firstColumn: 'Name', // Default first column to search by
     secondColumn: 'Email' // Default second column to search by

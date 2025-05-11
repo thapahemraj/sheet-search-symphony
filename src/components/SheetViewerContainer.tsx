@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { getSheetData, findRowsByMultipleCriteria, SheetData, getAvailableSheets } from "@/lib/googleSheetsApi";
 import { getConfig } from "@/lib/config";
@@ -23,7 +22,7 @@ const SheetViewerContainer = () => {
       setLoading(true);
       // Get the sheet ID from config
       const config = getConfig();
-      const sheets = await getAvailableSheets(config.sheetId);
+      const sheets = await getAvailableSheets();
       setAvailableSheets(sheets);
       
       if (sheets.length > 0) {

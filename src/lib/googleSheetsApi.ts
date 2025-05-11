@@ -8,9 +8,11 @@ export interface SheetData {
 }
 
 // Get available sheets in the spreadsheet
-export const getAvailableSheets = async (): Promise<{id: string, name: string}[]> => {
+export const getAvailableSheets = async (sheetIdParam?: string): Promise<{id: string, name: string}[]> => {
   const config = getConfig();
-  const { googleApiKey, sheetId } = config;
+  // Use the provided sheetId parameter or fall back to the one in config
+  const sheetId = sheetIdParam || config.sheetId;
+  const { googleApiKey } = config;
   
   if (!googleApiKey || !sheetId) {
     console.error('Missing API key or Sheet ID in configuration');
