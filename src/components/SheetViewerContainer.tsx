@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { getSheetData, findRowsByMultipleCriteria, SheetData, getAvailableSheets } from "@/lib/googleSheetsApi";
+import { getConfig, setSelectedColumns } from "@/lib/config";
 import SheetSelector from "./SheetSelector";
 import SearchBar from "./SearchBar";
 import ResultsDisplay from "./ResultsDisplay";
@@ -43,6 +44,7 @@ const SheetViewerContainer = () => {
   };
 
   useEffect(() => {
+    // Load the sheets when component mounts
     loadAvailableSheets();
   }, []);
 
@@ -82,7 +84,12 @@ const SheetViewerContainer = () => {
       });
       return;
     }
-
+    
+    // Save the selected columns to configuration
+    if (criteria.length >= 2) {
+      setSelectedColumns(criteria[0].field, criteria[1].field);
+    }
+    
     setSearchPerformed(true);
     setLoading(true);
 

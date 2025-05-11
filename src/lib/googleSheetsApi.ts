@@ -1,4 +1,5 @@
-import { getConfig } from './customization';
+
+import { getConfig } from './config';
 
 export interface SheetData {
   headers: string[];
@@ -7,13 +8,20 @@ export interface SheetData {
 }
 
 // Get available sheets in the spreadsheet
-export const getAvailableSheets = async (sheetId?: string): Promise<{id: string, name: string}[]> => {
+export const getAvailableSheets = async (): Promise<{id: string, name: string}[]> => {
   const config = getConfig();
-  const targetSheetId = sheetId || config.sheetId;
+  const { googleApiKey, sheetId } = config;
+  
+  if (!googleApiKey || !sheetId) {
+    console.error('Missing API key or Sheet ID in configuration');
+    return [];
+  }
   
   try {
-    console.log(`Fetching available sheets for Sheet ID: ${targetSheetId}...`);
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${targetSheetId}?key=${config.googleApiKey}`);
+    console.log(`Fetching available sheets for Sheet ID: ${sheetId}...`);
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${googleApiKey}`
+    );
     
     if (!response.ok) {
       console.error("Error fetching sheets:", await response.text());
@@ -37,6 +45,7 @@ export const getAvailableSheets = async (sheetId?: string): Promise<{id: string,
 // Get data from a specific sheet
 export const getSheetData = async (sheetId: string): Promise<SheetData> => {
   const config = getConfig();
+  const { googleApiKey } = config;
   
   try {
     console.log(`Fetching data for sheet ID: ${sheetId}`);
