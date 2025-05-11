@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { X, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getAvailableSheets } from "@/lib/googleSheetsApi";
+import { setSheetId } from "@/lib/config";
 
 interface GoogleSheetsDialogProps {
   open: boolean;
@@ -37,6 +38,7 @@ const GoogleSheetsDialog = ({
     
     setIsValidating(true);
     try {
+      // Modified this line to make sure we're passing the id correctly
       const sheets = await getAvailableSheets(id);
       setAvailableSheets(sheets);
       setIsValidating(false);

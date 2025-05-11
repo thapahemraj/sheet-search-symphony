@@ -21,7 +21,9 @@ const SheetViewerContainer = () => {
   const loadAvailableSheets = async () => {
     try {
       setLoading(true);
-      const sheets = await getAvailableSheets();
+      // Get the sheet ID from config
+      const config = getConfig();
+      const sheets = await getAvailableSheets(config.sheetId);
       setAvailableSheets(sheets);
       
       if (sheets.length > 0) {
