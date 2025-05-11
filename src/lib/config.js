@@ -4,7 +4,7 @@
 
 // Default configuration values
 const defaultConfig = {
-  googleApiKey: 'YOUR_GOOGLE_API_KEY', // Replace with your actual API key
+  googleApiKey: '629243208407-u6umtclisg0shja8rmc6g7p3g8m482tc.apps.googleusercontent.com', // Updated with provided Google API client ID
   sheetId: '1VvBc-6z-5ViSZfCxNYjV9MWvLtJ62kDG_S5tzJi26l0', // New Sheet ID provided by user
   selectedColumns: {
     firstColumn: 'Name', // Default first column to search by
