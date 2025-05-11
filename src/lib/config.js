@@ -7,8 +7,8 @@ const defaultConfig = {
   googleApiKey: 'YOUR_GOOGLE_API_KEY', // Replace with your actual API key
   sheetId: 'YOUR_SHEET_ID', // Replace with your actual Sheet ID
   selectedColumns: {
-    firstColumn: '',
-    secondColumn: ''
+    firstColumn: 'Name', // Default first column to search by
+    secondColumn: 'Email' // Default second column to search by
   }
 };
 
@@ -35,20 +35,10 @@ export const saveConfig = (config) => {
   }
 };
 
-// Set the selected columns for searching
-export const setSelectedColumns = (firstColumn, secondColumn) => {
-  const config = getConfig();
-  config.selectedColumns = {
-    firstColumn,
-    secondColumn
-  };
-  return saveConfig(config);
-};
-
 // Get the currently selected columns
 export const getSelectedColumns = () => {
   const config = getConfig();
-  return config.selectedColumns || { firstColumn: '', secondColumn: '' };
+  return config.selectedColumns || { firstColumn: 'Name', secondColumn: 'Email' };
 };
 
 // Update the Google API key
