@@ -5,7 +5,7 @@
 // Default configuration values
 const defaultConfig = {
   googleApiKey: '629243208407-u6umtclisg0shja8rmc6g7p3g8m482tc.apps.googleusercontent.com', // Updated with provided Google API client ID
-  sheetId: '1VvBc-6z-5ViSZfCxNYjV9MWvLtJ62kDG_S5tzJi26l0', // New Sheet ID provided by user
+  sheetId: '1VvBc-6z-5ViSZfCxNYjV9MWvLtJ62kDG_S5tzJi26l0', // Updated with provided Google spreadsheet ID
   selectedColumns: {
     firstColumn: 'Name', // Default first column to search by
     secondColumn: 'Email' // Default second column to search by
